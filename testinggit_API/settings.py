@@ -34,7 +34,8 @@ INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
     'rest_framework',
-    'api',
+    'accounts',
+    'corsheaders',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
@@ -44,12 +45,32 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
+CORS_ALLOWED_ORIGINS = [
+    'http://127.0.0.1:5500'
+]
+
+# CORS_ALLOW_ALL_ORIGINS = True
+
+# CORS_ALLOW_METHODS = [
+#     'GET',
+#     'POST',
+#     'PUT',
+#     'DELETE',
+#     'PATCH',
+# ]
+
+# CORS_ALLOW_HEADERS = [
+#     'Content-Type',
+#     'Authorization',
+# ]
 
 ROOT_URLCONF = 'testinggit_API.urls'
 
@@ -70,6 +91,9 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'testinggit_API.wsgi.application'
+
+#authentication database
+# AUTH_USER_MODEL = 'accounts.Accounts'
 
 
 # Database
