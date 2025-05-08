@@ -1,5 +1,6 @@
 from rest_framework.views import APIView
-import hashlib
+import hashlib, re
+from datetime import datetime
 from rest_framework.response import Response
 from rest_framework import status
 from .models import get_data, get_data_by_id, create_data, update_data, delete_data
@@ -7,6 +8,17 @@ from .models import get_data, get_data_by_id, create_data, update_data, delete_d
 
 ALLOWED_FIELDS = {'username','contact','address','dateOfBirth','password'} 
 REQUIRED_FIELDS = {'username','contact','address','dateOfBirth','password'}
+Email_RegEx = re.compile(r"^[\w\.-]+@[\w\.-]+\.\w+$")
+Phone_RegEx = re.compile(r"^[0-9]{7,15}$")
+User_RegEx = re.compile(r"^[a-zA-Z0-9]{6,14}$")
+Address_RegEx = re.compile(r"^[a-zA-Z0-9,.\-@+/ ]+$")
+Password_RegEx = re.compile(r"^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[@.!#$%&*])[a-zA-Z0-9@.!#$%&*]{8,}$")
+def date_check(string):
+    try:
+        datetime.strptime(string, '%Y-%m-%d')
+        return True
+    except ValueError:
+        return False
 
 
 class ObjectsView(APIView):
@@ -24,8 +36,10 @@ class ObjectsView(APIView):
 
     def post(self, request):
         data = request.data
-        data["password"] = hash_password(data["password"])
         valid, error = validate_input(data)
+        
+        if "password" in data:
+            data["password"] = hash_password(data["password"])
 
         if not valid:
             return Response(error, status=status.HTTP_400_BAD_REQUEST)
@@ -36,8 +50,10 @@ class ObjectsView(APIView):
 
     def put(self, request, id):
         data = request.data
-        data["password"] = hash_password(data["password"])
         valid, error = validate_input(data)
+
+        if "password" in data:
+            data["password"] = hash_password(data["password"])
 
         if not valid:
             return Response(error, status=status.HTTP_400_BAD_REQUEST)
@@ -49,9 +65,10 @@ class ObjectsView(APIView):
 
     def patch(self,request, id):
         data = request.data
+        valid, error = validate_input(data, partial=True)
+
         if "password" in data:
             data["password"] = hash_password(data["password"])
-        valid, error = validate_input(data, partial=True)
 
         if not valid:
             return Response(error,  status=status.HTTP_400_BAD_REQUEST)
@@ -64,7 +81,7 @@ class ObjectsView(APIView):
 
     def delete(self, request, id):
         if delete_data(id):
-            return Response({"message": "Data deleted successfully"})
+            return Response({"message": "Data deleted successfully"}, status=status.HTTP_204_NO_CONTENT )
         return Response({"error": "Data not found"}, status=status.HTTP_404_NOT_FOUND)
     
 
@@ -81,6 +98,21 @@ def validate_input(data, partial=False):
         if missing_fields:
             return False, {'error': f"Missing recquired field(s): {', '.join(missing_fields)}"}
         
+    if 'password' in data and not Password_RegEx.match(data['password']):
+        return False, {'error':'Password must include atleast, one uppercase, lowercase, number, and special chracters and atleast 8 characters long'}
+
+    if 'contact' in data and not (Email_RegEx.match(data['contact']) or Phone_RegEx.match(data['contact'])):
+        return False, {'error':'Invalid contact format. Must be an email or phone number(7-15 characters)'}
+    
+    if 'address' in data and not Address_RegEx.fullmatch(data['address']):
+        return False, {'error':'Address field contains unKnown characters'}
+    
+    if 'username' in data and not User_RegEx.fullmatch(data['username']):
+        return False, {'error':'Invalid username characters found'}
+    
+    if 'dateOfBirth' in data and not date_check(data['dateOfBirth']):
+        return False, {'error':'Invalid date format'}
+
     return True, None
 
 

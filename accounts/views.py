@@ -3,24 +3,8 @@ from .models import Accounts
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from .serializers import AccountsSerializers
-
 from django.contrib.auth import authenticate, login
 from rest_framework.authtoken.models import Token
-
-# Create your views here.
-class AccountsViewSet(viewsets.ModelViewSet):
-    queryset = Accounts.objects.all()
-    serializer_class = AccountsSerializers
-
-
-class RegisterView(APIView):
-    def post(self, requets):
-        return "Succesful"
-
-
-class LoginView(APIView):
-    def post(self, requets):
-        return "login Succesful"
 
 
 class AccountsView(APIView):
