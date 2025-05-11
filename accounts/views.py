@@ -1,5 +1,4 @@
-from django.contrib.auth import authenticate, login
-from rest_framework.authtoken.models import Token
+from django.contrib.auth.hashers import check_password
 from .serializers import  AccountsSerializers
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -11,7 +10,7 @@ Email_RegEx = re.compile(r"^[\w\.-]+@[\w\.-]+\.\w+$")
 Phone_RegEx = re.compile(r"^[0-9]{7,15}$")
 User_RegEx = re.compile(r"^[a-zA-Z0-9]{6,14}$")
 Address_RegEx = re.compile(r"^[a-zA-Z0-9,.\-@+/ ]+$")
-Password_RegEx = re.compile(r"^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[@.!#$%&*])[a-zA-Z0-9@.!#$%&*]{8,}$")
+Password_RegEx = re.compile(r"^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[ @.!#$%&*])[a-zA-Z0-9 @.!#$%&*]{8,}$")
 
 
 class AccountsView(APIView):
@@ -89,6 +88,30 @@ class AccountsView(APIView):
         return Response({'message':'Account does not exist'},status=status.HTTP_404_NOT_FOUND)
 
 
+class LoginView(APIView):
+    def post(self, request):
+        data = request.data
+
+        if 'password' in data:
+            password = data['password']
+        else:
+            return Response({'error':"Password is required"},status=status.HTTP_401_UNAUTHORIZED)
+
+        if 'username' in data :
+            account = Accounts.objects.filter(username=data['username']).first()
+            error = "invalid username or password"
+
+        if 'contact' in data:
+            account = Accounts.objects.filter(contact=data['contact']).first()
+            error = "invalid contact or password"
+
+        user = check_password(password, account.password)
+
+        if user:
+            return Response({'userId':account.id,'username':account.username}, status=status.HTTP_200_OK)
+        else:
+            return Response({'error':error},status=status.HTTP_401_UNAUTHORIZED)
+        
 
 def validate_input(data):     
     if 'password' in data and not Password_RegEx.match(data['password']):
