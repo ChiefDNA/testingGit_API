@@ -1,4 +1,5 @@
 from django.contrib.auth.hashers import check_password
+from .jwt_auth import  generate_jwt, decode_jwt
 from .serializers import  AccountsSerializers
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -31,14 +32,24 @@ class AccountsView(APIView):
 
     def get(self, request, id=None):
         if id is None:
-            users = Accounts.objects.values('id','username','contact','address','dateOfBirth','password')
+            users = Accounts.objects.values('id','username','contact','address','dateOfBirth')
             return Response(users)
         else:
-            users = Accounts.objects.filter(id=id).values('id','username','address','contact','dateOfBirth','password')
+            users = Accounts.objects.filter(id=id).values('id','username','address','contact','dateOfBirth')
             return Response(users)
         
 
     def put(self, request, id):
+        # adding token authorization
+        auth_header = request.header.get('Authorization')
+        if not auth_header or not auth_header.startswith('Bearer '):
+            return Response({'error' : 'Authorization token missing'}, status=status.HTTP_401_UNAUTHORIZED)
+        
+        token = auth_header.split(' ')[1]
+        user = decode_jwt(token)
+        if not user:
+            return Response({'error' : 'Invalid or expired token'}, status=status.HTTP_401_UNAUTHORIZED)
+
         data = request.data
         valid, error = validate_input(data)
 
@@ -108,7 +119,11 @@ class LoginView(APIView):
         user = check_password(password, account.password)
 
         if user:
-            return Response({'userId':account.id,'username':account.username}, status=status.HTTP_200_OK)
+            token = generate_jwt(account)
+            return Response({'token' : token,
+                             'userId' : account.id,
+                             'username' : account.username
+                             }, status=status.HTTP_200_OK)
         else:
             return Response({'error':error},status=status.HTTP_401_UNAUTHORIZED)
         
