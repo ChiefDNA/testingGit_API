@@ -5,7 +5,7 @@ from django.contrib.auth.hashers import make_password
 class AccountsSerializers(serializers.ModelSerializer):
     class Meta:
         model = Accounts
-        fields = ['id','username','contact','address','dateOfBirth','password']
+        fields = ['id','username','contact','address','dateOfBirth','role','password']
 
     def validate_password(self, value:str) -> str:
         #store pasword in hash

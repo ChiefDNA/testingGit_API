@@ -5,6 +5,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status
 from .models import Accounts
+from datetime import date
 import re
 
 Email_RegEx = re.compile(r"^[\w\.-]+@[\w\.-]+\.\w+$")
@@ -147,5 +148,16 @@ def validate_input(data):
     
     if 'username' in data and not User_RegEx.fullmatch(data['username']):
         return False, {'error':'Invalid username characters found'}
+    
+    if 'dateOfBirth' in data:
+        dob = data['dateOfBirth']
+        try:
+            birth_date = date.fromisoformat(dob)
+            today = date.today()
+            age = today.year - birth_date.year - ((today.month, today.day) < (birth_date.month, birth_date.day))
+            if age < 18:
+                return False, {'error': 'User must be at least 18 years old to register'}
+        except ValueError:
+            return False, {'error': 'Invalid date format. Use YYYY-MM-DD'}
 
     return True, None

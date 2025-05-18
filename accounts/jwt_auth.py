@@ -8,6 +8,7 @@ def generate_jwt(account):
     payload = {
         'id' : account.id,
         'username' : account.username,
+        'role' :account.role,
         'exp' : datetime.now(timezone.utc) + timedelta(minutes=30),
         'iat' : datetime.now(timezone.utc),
     }
