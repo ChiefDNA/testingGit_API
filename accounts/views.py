@@ -17,8 +17,14 @@ Password_RegEx = re.compile(r"^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[ @.!#$%&*]
 class AccountsView(APIView):
     def post(self, request):
         data = request.data
-        valid, error = validate_input(data)
 
+        if Accounts.objects.filter(contact=data['contact']).exists():
+            return Response({"message":"A user with this contact already exists."}, status=status.HTTP_400_BAD_REQUEST)
+        
+        if Accounts.objects.filter(username=data['username']).exists():
+            return Response({"message":"A user with this username already exists."}, status=status.HTTP_400_BAD_REQUEST)
+        
+        valid, error = validate_input(data)
         if not valid :
             return Response(error,status=status.HTTP_400_BAD_REQUEST)
         
@@ -26,8 +32,8 @@ class AccountsView(APIView):
 
         if serializers.is_valid():
             serializers.save()
-            return Response({'message':'successful'},status=status.HTTP_201_CREATED)
-        return Response(serializers.errors, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
+            return Response({'message':'Information placed succesfully'},status=status.HTTP_201_CREATED)
+        return Response(serializers.errors, status=status.HTTP_400_BAD_REQUEST)
     
 
     def get(self, request, id=None):
@@ -41,7 +47,8 @@ class AccountsView(APIView):
 
     def put(self, request, id):
         # adding token authorization
-        auth_header = request.header.get('Authorization')
+        auth_header = request.headers.get('Authorization')
+        
         if not auth_header or not auth_header.startswith('Bearer '):
             return Response({'error' : 'Authorization token missing'}, status=status.HTTP_401_UNAUTHORIZED)
         
@@ -65,7 +72,7 @@ class AccountsView(APIView):
 
         if serializer.is_valid():
             serializer.save()
-            return Response({'message':"Information replaced successfully"},status=status.HTTP_202_ACCEPTED)
+            return Response({'message':"Information has been replaced successfully"},status=status.HTTP_202_ACCEPTED)
         else:
             return Response({'message':'please provide all Fields'},status=status.HTTP_206_PARTIAL_CONTENT)
         
@@ -75,7 +82,7 @@ class AccountsView(APIView):
         valid, error = validate_input(data)
 
         if not valid:
-            return Response(error, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'message': error}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
             account = Accounts.objects.get(id=id)
@@ -102,7 +109,7 @@ class AccountsView(APIView):
 class LoginView(APIView):
     def post(self, request):
         data = request.data
-
+        
         if 'password' in data:
             password = data['password']
         else:
