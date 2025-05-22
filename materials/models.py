@@ -22,23 +22,23 @@ class Supplier(models.Model):
 class Material(models.Model):
     name  = models.CharField(max_length=255)
     type = models.ForeignKey(MaterialType, on_delete=models.SET_NULL, null=True, blank=True)
-    Supplier = models.ForeignKey(Supplier, on_delete=models.SET_NULL, null=True, blank=True)
+    supplier = models.ForeignKey(Supplier, on_delete=models.SET_NULL, null=True, blank=True)
     unit_cost = models.DecimalField(max_digits=10, decimal_places=2)
-    total_quatity = models.FloatField()
+    total_quantity = models.FloatField()
     date_added = models.DateField(auto_now_add=True)
     added_by = models.ForeignKey(Accounts, on_delete=models.CASCADE)
 
     def __str__(self):
-        return f"{self.name} - {self.total_quatity} units"
+        return f"{self.name} - {self.total_quantity} units"
     
 
 class MaterialUsage(models.Model):
     material = models.ForeignKey(Material, on_delete=models.CASCADE, related_name='usage_logs')
-    date =models.DateField()
+    date =models.DateField(auto_now_add=True)
     quantity_used = models.FloatField()
 
     class Meta:
-        unique_toether = ['material', 'date'] #to avoid duplicte logs on same day
+        unique_together = ['material', 'date'] #to avoid duplicte logs on same day
 
     def __str__(self):
         return f"{self.material.name} used on {self.date}: {self.quantity_used}"

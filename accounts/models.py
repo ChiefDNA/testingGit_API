@@ -16,4 +16,4 @@ class Accounts(models.Model):
     role = models.CharField(max_length=10, choices=ROLE_CHOICES, default='worker')
 
     def __str__(self):
-        return self.name
+        return self.username

@@ -1,4 +1,4 @@
-from .serializers import MaterialSerializer, MaterialUsageSerializer
+from .serializers import MaterialSerializer, MaterialUsageSerializer, MaterialTypeSerializer, SupplierSerializer
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from .models import Material, MaterialUsage
@@ -6,6 +6,13 @@ from rest_framework.views import APIView
 from accounts.jwt_auth import decode_jwt
 from accounts.models import Accounts
 from rest_framework import status
+import re
+
+
+Name_RegEx = re.compile(r"^[a-zA-Z0-9.', ]{2,}$")
+Contact_RegEx = re.compile(r"^[a-zA-Z0-9,.\@+/ \-]+$")
+NumberType_RegEx = re.compile(r"^[0-9]+(\.[0-9]+)?$")
+number_fields = ['supplier', 'total_quantity', 'unit_cost', 'quantity_used', 'material', 'type', 'added_by']
 
 
 def is_authorized(request):
@@ -20,6 +27,28 @@ def is_authorized(request):
     return None
 
 
+def validate_input(data):     
+
+
+
+    # if 'material' in data and not Name_RegEx.fullmatch(data['material']):
+    #     return False, {'error':'Expecting specific material name used without special characters'}
+
+    if 'contact_info' in data and not Contact_RegEx.fullmatch(data['contact_info']):
+        return False, {'error':'Expecting supplier address or contact or email'}
+    
+
+    for field in number_fields:
+        if field in data and not NumberType_RegEx.fullmatch(str(data[field])):
+            return False, {'error': f"Expecting numeric value for '{field}'"}
+
+    
+    if 'name' in data and not Name_RegEx.fullmatch(data['name']):
+        return False, {'error':'Invalid characters found while expecting full-names'}
+
+    return True, None
+
+
 
 class MaterialView(APIView):
 
@@ -27,6 +56,9 @@ class MaterialView(APIView):
     def get(self, request):
 
         Materials = Material.objects.all()
+        #cleaning response
+        #for material in 
+
         serializer = MaterialSerializer(Materials,many=True)
         return Response(serializer.data)
     
@@ -35,14 +67,17 @@ class MaterialView(APIView):
         
         user = is_authorized(request)
         if not user:
-            return Response({'error':'Unauthorized access'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'error':'Unauthorized access'}, status=status.HTTP_401_UNAUTHORIZED)
+                
+        valid, error = validate_input(request.data)
+        if not valid :
+            return Response(error,status=status.HTTP_400_BAD_REQUEST)
         
         data = request.data.copy()
-        data['added_by'] = user.id
 
         serializer = MaterialSerializer(data=data)
         if serializer.is_valid():
-            serializer.save()
+            serializer.save(added_by=user)
             return Response({'message':'saved'}, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
@@ -55,7 +90,11 @@ class MaterialDetailView(APIView):
         
         user = is_authorized(request)
         if not user:
-            return Response({'error':'Unauthorized access'}, status=status.HTTP_403_FORBIDDEN)
+            return Response({'error':'Unauthorized access'}, status=status.HTTP_401_UNAUTHORIZED)
+                
+        valid, error = validate_input(request.data)
+        if not valid :
+            return Response(error,status=status.HTTP_400_BAD_REQUEST)
         
         try:
             material = Material.objects.get(id=id)
@@ -73,7 +112,7 @@ class MaterialDetailView(APIView):
         
         user = is_authorized(request)
         if not user:
-            return Response({'error':'Unaothorized access'},status=status.HTTP_403_FORBIDDEN)
+            return Response({'error':'Unaothorized access'},status=status.HTTP_401_UNAUTHORIZED)
         
         try:
             material = Material.objects.get(id=id)
@@ -89,10 +128,52 @@ class MaterialUsageView(APIView):
     def post(self, request):
         user = is_authorized(request)
         if not user:
-            return Response({'error':'Unauthorized access'}, status=status.HTTP_403_FORBIDDEN)
+            return Response({'error':'Unauthorized access'}, status=status.HTTP_401_UNAUTHORIZED)
+                
+        valid, error = validate_input(request.data)
+        if not valid :
+            return Response(error,status=status.HTTP_400_BAD_REQUEST)
         
         serializer = MaterialUsageSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response({'message':'Material log saved'},status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+
+
+class MaterialTypeView(APIView):
+
+    def post(self, request):
+        user = is_authorized(request)
+        if not user:
+            return Response({'error':'Unauthorized access'}, status=status.HTTP_401_UNAUTHORIZED)
+                
+        valid, error = validate_input(request.data)
+        if not valid :
+            return Response(error,status=status.HTTP_400_BAD_REQUEST)
+        
+        serializer = MaterialTypeSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({'message':'Material saved'},status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+
+
+class SupplierView(APIView):
+
+    def post(self, request):
+        user = is_authorized(request)
+        if not user:
+            return Response({'error':'Unauthorized access'}, status=status.HTTP_401_UNAUTHORIZED)
+                
+        valid, error = validate_input(request.data)
+        if not valid :
+            return Response(error,status=status.HTTP_400_BAD_REQUEST)
+        
+        serializer = SupplierSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({'message':'Supplier saved'},status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

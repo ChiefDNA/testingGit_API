@@ -11,7 +11,7 @@ class MaterialTypeSerializer(serializers.ModelSerializer):
 
 class SupplierSerializer(serializers.ModelSerializer):
 
-    class meta:
+    class Meta:
         model = Supplier
         fields = ['id', 'name', 'contact_info']
 
@@ -28,4 +28,4 @@ class MaterialUsageSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = MaterialUsage
-        fields = ['id', 'material', 'date', 'quatity_used']
+        fields = ['id', 'material', 'date', 'quantity_used']

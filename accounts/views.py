@@ -39,10 +39,10 @@ class AccountsView(APIView):
 
     def get(self, request, id=None):
         if id is None:
-            users = Accounts.objects.values('id','username','contact','address','dateOfBirth')
+            users = Accounts.objects.values('id','username','contact','address','dateOfBirth','role')
             return Response(users)
         else:
-            users = Accounts.objects.filter(id=id).values('id','username','address','contact','dateOfBirth')
+            users = Accounts.objects.filter(id=id).values('id','username','address','contact','role','dateOfBirth')
             return Response(users)
         
 
