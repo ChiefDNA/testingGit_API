@@ -68,7 +68,7 @@ class MaterialTests(SetUpTestData1):
         response = self.client.post('/materials/general/', self.material_data, format='json', **self.headers)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(Material.objects.count(), 1)
-        self.assertEqual(response.data['message'], 'saved')
+        self.assertEqual(response.data['message'], 'Saved')
 
 
     def test_create_material_unauthorized(self):

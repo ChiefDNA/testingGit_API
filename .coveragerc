@@ -2,6 +2,7 @@
 source = 
     accounts
     materials
+    
 [report]
 omit = 
     */tests/*
