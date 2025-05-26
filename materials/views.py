@@ -1,7 +1,7 @@
 from .serializers import MaterialSerializer, MaterialUsageSerializer, MaterialTypeSerializer, SupplierSerializer
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from .models import Material, MaterialUsage
+from .models import Material, MaterialUsage, MaterialType, Supplier
 from rest_framework.views import APIView
 from accounts.jwt_auth import decode_jwt
 from accounts.models import Accounts
@@ -11,7 +11,7 @@ import re
 
 Name_RegEx = re.compile(r"^[a-zA-Z0-9.', ]{2,}$")
 Contact_RegEx = re.compile(r"^[a-zA-Z0-9,.\@+/ \-]+$")
-NumberType_RegEx = re.compile(r"^[0-9]+(\.[0-9]+)?$")
+NumberType_RegEx = re.compile(r"^[0-9-]+(\.[0-9]+)?$")
 number_fields = ['supplier', 'total_quantity', 'unit_cost', 'quantity_used', 'material', 'type', 'added_by']
 
 
@@ -55,11 +55,18 @@ class MaterialView(APIView):
 
     def get(self, request):
 
+        user = is_authorized(request)
+        if not user:
+            return Response({'error':'Unauthorized access'}, status=status.HTTP_401_UNAUTHORIZED)
+                
         Materials = Material.objects.all()
         #cleaning response
-        #for material in 
-
         serializer = MaterialSerializer(Materials,many=True)
+        for material in serializer.data:
+            material['type'] = MaterialType.objects.get(id=material['type']).name
+            material['supplier'] = Supplier.objects.get(id=material['supplier']).name
+            material['added_by'] = Accounts.objects.get(id=material['added_by']).username 
+
         return Response(serializer.data)
     
 
@@ -74,11 +81,12 @@ class MaterialView(APIView):
             return Response(error,status=status.HTTP_400_BAD_REQUEST)
         
         data = request.data.copy()
-
+        supplier = Supplier.objects.get(id=data['supplier'])
+        type = MaterialType.objects.get(id=data['type'])
         serializer = MaterialSerializer(data=data)
         if serializer.is_valid():
-            serializer.save(added_by=user)
-            return Response({'message':'saved'}, status=status.HTTP_201_CREATED)
+            serializer.save(added_by=user,supplier=supplier,type=type)
+            return Response({'message':'Saved'}, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
 
@@ -141,6 +149,16 @@ class MaterialUsageView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
 
+    def get(self, request):
+        user = is_authorized(request)
+        if not user:
+            return Response({'error':'Unauthorized access'}, status=status.HTTP_401_UNAUTHORIZED)
+        
+        usage = MaterialUsage.objects.all()
+        serializer = MaterialUsageSerializer(usage,many=True)
+        return Response(serializer.data)
+    
+
 
 class MaterialTypeView(APIView):
 
@@ -158,6 +176,17 @@ class MaterialTypeView(APIView):
             serializer.save()
             return Response({'message':'Material saved'},status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+    def get(self, request):
+        user = is_authorized(request)
+        if not user:
+            return Response({'error':'Unauthorized access'}, status=status.HTTP_401_UNAUTHORIZED)
+        
+        type = MaterialType.objects.all()
+        serializer = MaterialTypeSerializer(type, many=True)
+        return Response(serializer.data)
+     
     
 
 
@@ -177,3 +206,15 @@ class SupplierView(APIView):
             serializer.save()
             return Response({'message':'Supplier saved'},status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+    
+    def get(self, request):
+        user = is_authorized(request)
+        print(request.headers.get('Autorization'))
+        if not user:
+            return Response({'error':'Unauthorized access'}, status=status.HTTP_401_UNAUTHORIZED)
+
+        supplier = Supplier.objects.all()
+        serializer = SupplierSerializer(supplier, many=True)
+        return Response(serializer.data)

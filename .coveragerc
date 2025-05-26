@@ -1,0 +1,10 @@
+[run]
+source = 
+    accounts
+    materials
+[report]
+omit = 
+    */tests/*
+    */migrations/*
+    manage.py
+    */__init__.py

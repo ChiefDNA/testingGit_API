@@ -129,7 +129,7 @@ class LoginView(APIView):
         if user:
             token = generate_jwt(account)
             return Response({'token' : token,
-                             'userId' : account.id,
+                             'role' : account.role,
                              'username' : account.username
                              }, status=status.HTTP_200_OK)
         else:
