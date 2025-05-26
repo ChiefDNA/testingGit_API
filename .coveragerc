@@ -1,7 +1,8 @@
 [run]
+branch = true
 source = 
-    accounts
-    materials
+    accounts/
+    materials/
     
 [report]
 omit = 

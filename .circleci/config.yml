@@ -4,7 +4,7 @@ orbs:
   python: circleci/python@2.1.1
 
 jobs:
-  test:    
+  test_with_coverage:    
     docker:
       - image: cimg/python:3.13.1
         environment:
@@ -14,21 +14,23 @@ jobs:
       - checkout
       
       - run:
-          name: install pipenv an pip packages
+          name: install pipenv and pip packages
           command: |
             python -m pip install --upgrade pip
-            pip install -r reqiurements.txt
-          # app-dir: ~/project/package-directory/  # If your requirements.txt isn't in the root directory.
-          # pip-dependency-file: test-requirements.txt  # if you have a different name for your requirements file, maybe one that combines your runtime and test requirements.
+            pip install -r requirements.txt
+          
       - run:
-          name: Run tests
+          name: Run tests with coverage
           command: |
-            python manage.py test accounts.tests.test_accounts
-            python manage.py test materials/tests/
+            coverage run manage.py test
+            coverage report
+            coverage html
 
-# Orchestrate jobs using workflows
-# See: https://circleci.com/docs/workflows/ & https://circleci.com/docs/configuration-reference/#workflows
+      - store_artifacts:
+          path: htmlcov
+          destination: coverage-report
+
 workflows:
   tests:
     jobs:
-      - test
+      - test_with_coverage
