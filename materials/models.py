@@ -15,6 +15,9 @@ class Supplier(models.Model):
     name = models.CharField(max_length=150)
     contact_info = models.TextField(blank=True)
 
+    class Meta:
+        unique_together = ['name', 'contact_info']
+
     def __str__(self):
         return self.name
     
@@ -27,6 +30,9 @@ class Material(models.Model):
     total_quantity = models.FloatField()
     date_added = models.DateField(auto_now_add=True)
     added_by = models.ForeignKey(Accounts, on_delete=models.CASCADE)
+
+    class Meta:
+        unique_together = ('name', 'type', 'supplier', 'date_added')
 
     def __str__(self):
         return f"{self.name} - {self.total_quantity} units"

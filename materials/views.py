@@ -120,7 +120,7 @@ class MaterialDetailView(APIView):
         
         user = is_authorized(request)
         if not user:
-            return Response({'error':'Unaothorized access'},status=status.HTTP_401_UNAUTHORIZED)
+            return Response({'error':'Unauthorized access'},status=status.HTTP_401_UNAUTHORIZED)
         
         try:
             material = Material.objects.get(id=id)

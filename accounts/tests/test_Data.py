@@ -13,14 +13,16 @@ class SetUpTestData(TestCase):
             "contact": "newuser@example.com",
             "password": "StrongPass1!",
             "address": "456 Test Ave",
-            "dateOfBirth": "1990-01-01"
+            "dateOfBirth": "1990-01-01",
+            "role": "admin"
         }
         self.data_1_put = {
             "username": "Replacer",
             "contact": "newuser@example.com", #same contact
             "password": "StrongPass12!",
             "address": "456 Tests Avenue",
-            "dateOfBirth": "1990-01-02"
+            "dateOfBirth": "1990-01-02",
+            "role": "admin"
         }
         self.data_1_patch = {
             "username": "JohnDeo",

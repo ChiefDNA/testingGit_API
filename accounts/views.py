@@ -20,10 +20,10 @@ class AccountsView(APIView):
         data = request.data
 
         if Accounts.objects.filter(contact=data['contact']).exists():
-            return Response({"message":"A user with this contact already exists."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"error":"A user with this contact already exists."}, status=status.HTTP_400_BAD_REQUEST)
         
         if Accounts.objects.filter(username=data['username']).exists():
-            return Response({"message":"A user with this username already exists."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"error":"A user with this username already exists."}, status=status.HTTP_400_BAD_REQUEST)
         
         valid, error = validate_input(data)
         if not valid :
@@ -67,7 +67,7 @@ class AccountsView(APIView):
         try:
             account = Accounts.objects.get(id=id)
         except Accounts.DoesNotExist:
-            return Response({'message':'Id not found'},status=status.HTTP_404_NOT_FOUND)
+            return Response({'error':'Id not found'},status=status.HTTP_404_NOT_FOUND)
 
         serializer = AccountsSerializers(account, data=data)
 
@@ -75,7 +75,7 @@ class AccountsView(APIView):
             serializer.save()
             return Response({'message':"Information has been replaced successfully"},status=status.HTTP_202_ACCEPTED)
         else:
-            return Response({'message':'please provide all Fields'},status=status.HTTP_206_PARTIAL_CONTENT)
+            return Response({'error':'please provide all Fields'},status=status.HTTP_400_BAD_REQUEST)
         
 
     def patch(self,request, id):
@@ -83,12 +83,12 @@ class AccountsView(APIView):
         valid, error = validate_input(data)
 
         if not valid:
-            return Response({'message': error}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'error': error}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
             account = Accounts.objects.get(id=id)
         except Accounts.DoesNotExist:
-            return Response({'message':"Id not found"},status=status.HTTP_404_NOT_FOUND)
+            return Response({'error':"Id not found"},status=status.HTTP_404_NOT_FOUND)
         
         serializers = AccountsSerializers(account, data=data, partial=True)
 
@@ -96,15 +96,15 @@ class AccountsView(APIView):
             serializers.save()
             return Response({'message':'Information has been modified succesfully'},status=status.HTTP_202_ACCEPTED)
         else:
-            return Response({'message':'Please provide atleast one Field to be modified'},status=status.HTTP_204_NO_CONTENT)
+            return Response( serializers.errors, status=status.HTTP_400_BAD_REQUEST)
         
 
     def delete(self, request , id):
         accounts = Accounts.objects.filter(id=id)
         if accounts:
             accounts.delete()
-            return Response({'message':'acount details deleted successfuly'},status=status.HTTP_410_GONE)
-        return Response({'message':'Account does not exist'},status=status.HTTP_404_NOT_FOUND)
+            return Response({'message':'Account details deleted successfuly'},status=status.HTTP_204_NO_CONTENT)
+        return Response({'error':'Account does not exist'},status=status.HTTP_404_NOT_FOUND)
 
 
 class LoginView(APIView):
@@ -114,7 +114,7 @@ class LoginView(APIView):
         if 'password' in data:
             password = data['password']
         else:
-            return Response({'error':"Password is required"},status=status.HTTP_401_UNAUTHORIZED)
+            return Response({'error':"Password is required"},status=status.HTTP_400_BAD_REQUEST)
 
         if 'username' in data :
             account = Accounts.objects.filter(username=data['username']).first()
@@ -124,7 +124,10 @@ class LoginView(APIView):
             account = Accounts.objects.filter(contact=data['contact']).first()
             error = "invalid contact or password"
 
-        user = check_password(password, account.password)
+        try:
+            user = check_password(password, account.password)
+        except:
+            user = None
 
         if user:
             token = generate_jwt(account)
