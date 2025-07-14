@@ -134,7 +134,8 @@ class LoginView(APIView):
             return Response({'token' : token,
                              'userId' : account.id,
                              'role' : account.role,
-                             'username' : account.username
+                             'username' : account.username,
+                             'company' : account.company
                              }, status=status.HTTP_200_OK)
         else:
             return Response({'error':error},status=status.HTTP_401_UNAUTHORIZED)

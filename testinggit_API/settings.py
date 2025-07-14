@@ -34,6 +34,7 @@ INSTALLED_APPS = [
     'django.contrib.auth',
     'rest_framework',
     'accounts',
+    'companies',
     'materials',
     'corsheaders',
     'django.contrib.contenttypes',
@@ -55,23 +56,14 @@ MIDDLEWARE = [
 ]
 
 CORS_ALLOWED_ORIGINS = [
-    'http://127.0.0.1:5500'
+    'http://127.0.0.1:5500',
+    'http://127.0.0.1:3000',
+    'http://localhost:3000',
+    'https://chiefdna.github.io'
 ]
 
-# CORS_ALLOW_ALL_ORIGINS = True
-
-# CORS_ALLOW_METHODS = [
-#     'GET',
-#     'POST',
-#     'PUT',
-#     'DELETE',
-#     'PATCH',
-# ]
-
-# CORS_ALLOW_HEADERS = [
-#     'Content-Type',
-#     'Authorization',
-# ]
+MEDIA_ROOT = BASE_DIR / 'media'
+MEDIA_URL = '/media/'
 
 ROOT_URLCONF = 'testinggit_API.urls'
 

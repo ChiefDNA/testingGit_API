@@ -9,7 +9,7 @@ def generate_jwt(account):
         'id' : account.id,
         'username' : account.username,
         'role' :account.role,
-        'exp' : datetime.now(timezone.utc) + timedelta(minutes=30),
+        'exp' : datetime.now(timezone.utc) + timedelta(minutes=120),
         'iat' : datetime.now(timezone.utc),
     }
     token = jwt.encode(payload, settings.SECRET_KEY, algorithm='HS256')
