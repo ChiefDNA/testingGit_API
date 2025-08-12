@@ -1,0 +1,39 @@
+.section {
+    height: 100vh;
+    width: 100vw;
+    margin: 0px;
+    display: flex;
+}
+
+body {
+    margin: 0px;
+    display: block;
+    padding: 0px;
+}
+
+.container {
+    margin: auto;
+    position: relative;
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.col {
+    height: 156px;
+    width: 317px;
+    padding: 10px;
+}
+
+form {
+    padding-left: 10px;
+}
+
+form * {
+    margin-bottom: 10px;
+}
+
+.col form button {
+    justify-self: flex-end;
+    display: block;
+    margin-right: 50px;
+}

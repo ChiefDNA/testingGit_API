@@ -1,0 +1,73 @@
+.dashboard-container {
+  display: flex;
+  height: 100vh;
+  font-family: Arial;
+  background-color: #131223;
+  color: aliceblue;
+}
+
+.sidebar {
+  width: 214px;
+  background: #1c253b;
+  position: relative;
+  overflow-y: scroll;
+  margin: 0 0px;
+}
+
+.main-panel {
+  flex-grow: 1;
+  padding: 1rem;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1rem;
+}
+
+td, th {
+  border: 1px solid #ddd;
+  padding: 8px;
+}
+td {
+  padding: 4px
+}
+td.crud-actions {
+  text-align: center;
+  white-space: nowrap;
+}
+
+
+.db-apps {
+    width: 100%;
+    box-sizing: border-box;
+    text-align: left;
+}
+
+.app-group {
+    background: #263249;
+    text-decoration: underline;
+    width: 100%;
+}
+
+tbody.apps, .apps tr, .apps td {
+    width: 100%;
+    margin: 0px;
+    border: none;
+    background-color: inherit;
+}
+
+.sidepanel {
+    height: 70%;
+    background: #2d2d2f;
+    width: calc(100% - 15px);
+    margin: auto;
+}
+
+body {
+    margin: 0px;
+}
+
+h3 {
+    margin-left: 7px;
+}

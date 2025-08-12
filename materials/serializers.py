@@ -22,7 +22,7 @@ class MaterialSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Material
-        fields = ['id', 'type', 'name', 'supplier', 'unit_cost', 'total_quantity', 'company', 'added_by', 'date_added']
+        fields = ['id', 'type', 'name', 'supplier', 'unit_cost', 'total_quantity', 'added_by', 'date_added']
         read_only_fields = ['added_by', 'date_added', 'company']
 
 

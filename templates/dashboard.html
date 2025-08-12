@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Dashboard</title>
+    <link rel="stylesheet" href="/static/css/dashboard.css">
+    <meta name="jwt-token" content="{{ token|escapejs }}">
+  </head>
+  <body>
+    <div class="dashboard-container">
+      <!-- Sidebar -->
+      <div class="sidebar">
+        <h3>Tables</h3>
+        <div class="sidepanel">
+          <table class="db-apps">
+            {% for app_label, models in tables.items %}
+            <thead class="app-group {{ app_label }}">
+              <tr>
+                <th onclick="toggleGroup('{{app_label|escapejs}}')">{{ app_label|capfirst }}</th>
+              </tr>
+            </thead>
+            <tbody class="{{ app_label }}-li apps" style="display:none;">
+              {% for model in models %}
+                <tr>
+                  <td onclick="loadTable('{{ app_label }}', '{{ model.model_name }}')">
+                    {{ model.verbose_name }}
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+            {% endfor %}
+          </table>
+        </div>
+      </div>
+
+      <!-- Main content -->
+      <div class="main-panel">
+        <h1 id="main-title">Select a table to view its data</h1>
+        <!-- Hidden element to hold current app label for JS -->
+        <div id="app-label" style="display:none;"></div>
+        <div class="crud-options">
+          <div id="crud-controls">
+            <span data-mode="read" class="crud-read active"> View </span>
+            <span data-mode="create" class="crud-create"> Add </span>
+            <span data-mode="update" class="crud-update"> Update </span>
+            <span data-mode="delete" class="crud-delete"> Delete </span>
+            <span data-mode="file" class="crud-file"> Records </span>
+          </div>
+          <div id="table-container">Select a table to view its data</div>
+        </div>
+
+      </div>
+    </div>
+
+    <script>
+      const Tables = {{ tables|safe }};
+    </script>
+    <script src="/static/js/dashboard.js"></script>
+  </body>
+</html>

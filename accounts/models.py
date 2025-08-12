@@ -20,10 +20,16 @@ class Accounts(models.Model):
         ('supervisor','Supervisor'),
         ('client','Client'),
         ('guest','Guest'),
-        ('superUser','SuperUser'),
+        ('superuser','SuperUser'),
         ('subcontractor','Subcontractor'),
     ]
-    role = models.CharField(max_length=10, choices=ROLE_CHOICES, default='worker')
+    role = models.CharField(max_length=14, choices=ROLE_CHOICES, default='worker')
+    # Fields Django expects for authentication
+    last_login = models.DateTimeField(null=True, blank=True)
+    is_active = models.BooleanField(default=True)
+    is_staff = models.BooleanField(default=False)
 
+    USERNAME_FIELD = 'username'
+    
     def __str__(self):
         return self.username

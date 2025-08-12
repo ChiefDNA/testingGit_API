@@ -16,9 +16,17 @@ def generate_jwt(account):
     return token
 
 def decode_jwt(token):
+    print(token)
     try:
         payload = jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'])
         user = Accounts.objects.get(id=payload['id'])
         return user
-    except (jwt.ExpiredSignatureError, jwt.DecodeError, Accounts.DoesNotExist):
+    except jwt.ExpiredSignatureError:
+        print("JWT expired")
+        return None
+    except jwt.DecodeError:
+        print("JWT decode error")
+        return None
+    except Accounts.DoesNotExist:
+        print("User does not exist with given ID")
         return None

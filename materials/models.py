@@ -30,8 +30,8 @@ class Supplier(models.Model):
 
 class Material(models.Model):
     name  = models.CharField(max_length=255)
-    company = models.ForeignKey(Company, on_delete=models.SET_NULL, null=False, blank=False)
-    type = models.ForeignKey(MaterialType, on_delete=models.SET_NULL, null=False, blank=False)
+    company = models.ForeignKey(Company, on_delete=models.SET_NULL, null=True, blank=False)
+    type = models.ForeignKey(MaterialType, on_delete=models.SET_NULL, null=True, blank=False)
     supplier = models.ForeignKey(Supplier, on_delete=models.SET_NULL, null=True, blank=True)
     unit_cost = models.DecimalField(max_digits=10, decimal_places=2)
     total_quantity = models.FloatField()

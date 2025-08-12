@@ -1,19 +1,14 @@
 from .serializers import MaterialSerializer, MaterialUsageSerializer, MaterialTypeSerializer, SupplierSerializer
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.response import Response
 from .models import Material, MaterialUsage, MaterialType, Supplier
+from rest_framework.permissions import IsAuthenticated
+from accounts.validations import validate_input
+from rest_framework.response import Response
 from rest_framework.views import APIView
 from accounts.jwt_auth import decode_jwt
 from accounts.models import Accounts
 from companies.models import Company
 from rest_framework import status
-import re
 
-
-Name_RegEx = re.compile(r"^[a-zA-Z0-9.', ]{2,}$")
-Contact_RegEx = re.compile(r"^[a-zA-Z0-9,.\@+/ \-]+$")
-NumberType_RegEx = re.compile(r"^[0-9-]+(\.[0-9]+)?$")
-number_fields = ['supplier', 'total_quantity', 'unit_cost', 'quantity_used', 'material', 'type', 'added_by']
 
 
 def is_authorized(request):
@@ -22,33 +17,10 @@ def is_authorized(request):
         return None
     
     user = decode_jwt(token.split(' ')[1])
-    if user and user.role in ['admin', 'foreman']:
+    if user and user.role in ['superuser','admin','manager','supervisor','foreman','subcontractor']:
         return user
     
     return None
-
-
-def validate_input(data):     
-
-
-
-    # if 'material' in data and not Name_RegEx.fullmatch(data['material']):
-    #     return False, {'error':'Expecting specific material name used without special characters'}
-
-    if 'contact_info' in data and not Contact_RegEx.fullmatch(data['contact_info']):
-        return False, {'error':'Expecting supplier address or contact or email'}
-    
-
-    for field in number_fields:
-        if field in data and not NumberType_RegEx.fullmatch(str(data[field])):
-            return False, {'error': f"Expecting numeric value for '{field}'"}
-
-    
-    if 'name' in data and not Name_RegEx.fullmatch(data['name']):
-        return False, {'error':'Invalid characters found while expecting full-names'}
-
-    return True, None
-
 
 
 class MaterialView(APIView):
@@ -59,7 +31,8 @@ class MaterialView(APIView):
         user = is_authorized(request)
         if not user:
             return Response({'error':'Unauthorized access'}, status=status.HTTP_401_UNAUTHORIZED)
-                
+        
+        print(user.company)     
         Materials = Material.objects.filter(company=user.company)
         #cleaning response
         serializer = MaterialSerializer(Materials,many=True)
@@ -85,7 +58,10 @@ class MaterialView(APIView):
         data = request.data.copy()
         supplier = Supplier.objects.get(id=data['supplier'])
         type = MaterialType.objects.get(id=data['type'])
-        company = Company.objects.get(id=user.company)
+        if user.role == 'superuser':
+            company = Company.objects.get(id=request.data["company"])
+        else :
+            company = Company.objects.get(id=user.company)
         serializer = MaterialSerializer(data=data)
         if serializer.is_valid():
             serializer.save(added_by=user,supplier=supplier,type=type,company=company)
@@ -176,7 +152,11 @@ class MaterialTypeView(APIView):
         if not valid :
             return Response(error,status=status.HTTP_400_BAD_REQUEST)
         
-        company = Company.objects.get(id=user.company)
+        if user.role == 'superuser':
+            company = Company.objects.get(id=request.data["company"])
+        else :
+            company = Company.objects.get(id=user.company)
+
         serializer = MaterialTypeSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save(company=company)
@@ -207,7 +187,11 @@ class SupplierView(APIView):
         if not valid :
             return Response(error,status=status.HTTP_400_BAD_REQUEST)
         
-        company = Company.objects.get(id=user.company)
+        if user.role == 'superuser':
+            company = Company.objects.get(id=request.data["company"])
+        else :
+            company = Company.objects.get(id=user.company)
+
         serializer = SupplierSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save(company=company)

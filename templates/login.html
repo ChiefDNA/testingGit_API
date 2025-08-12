@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Login TestingGit-API</title>
+  <link rel="stylesheet" href="/static/css/login.css">
+</head>
+<body>
+  <div class='section'>
+    <div class='container'>
+      <div class='col'>
+        <h2>Login</h2>
+        <form method="POST">
+          {% csrf_token %}
+          <label>Username:</label>
+          <input type="text" name="username" required><br>
+          <label>Password:</label>
+          <input type="password" name="password" required><br>
+          <button type="submit">Login</button>
+          {% if error %}<p style="color:red">{{ error }}</p>{% endif %}
+        </form>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
